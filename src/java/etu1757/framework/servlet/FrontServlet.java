@@ -4,11 +4,13 @@
  */
 package etu1757.framework.servlet;
 
+import etu1757.framework.Mapping;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import java.util.HashMap;
 
 /**
  *
@@ -16,6 +18,7 @@ import jakarta.servlet.http.*;
  */
 @WebServlet(name = "FrontServlet", urlPatterns = {"/"})
 public class FrontServlet extends HttpServlet {
+    private HashMap<String, Mapping> mappingUrls;
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
