@@ -11,6 +11,13 @@ package etu1757.framework;
 public class Mapping {
     private String className;
     private String method;
+
+    public Mapping(String className, String method) {
+        this.className = className;
+        this.method = method;
+    }
+    
+    
     
     // Getters and setters
 
