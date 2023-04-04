@@ -1,3 +1,6 @@
+<%@page import="model.*"%>
+<% Employe e = new Employe("e1", "jane"); %>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -7,7 +10,7 @@
     </head>
     <body>
         <div> 
-            <a href="/company/hello"> Hello </a>
+            <a href="/company/hello"> Hello <%= e.getNameEmploye() %> </a>
         </div>
     </body>
 </html>
