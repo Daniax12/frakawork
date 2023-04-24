@@ -26,38 +26,28 @@ public class FrontServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
         try{
-            PrintWriter out = response.getWriter();
+            
+            out.println("Hello");
             String path = (String) request.getServletPath();
-            String[] split = path.split("/"); 
+            ModelView mv = (ModelView) Utilities.getViewByPath(request, path, this.getMappingUrls());
 
-            if(this.getMappingUrls().containsKey(split[1]) == true){
-                String className = this.getMappingUrls().get(split[1]).getClassName();          // Get the name of the class
-                String methode = this.getMappingUrls().get(split[1]).getMethod();               // Get the method
-                Class<?> classType = Class.forName(className);                                  // Recast the name => Classe
-                Object temp = classType.getDeclaredConstructor().newInstance();                 // INstantiate the object
-                ModelView mv = (ModelView) classType.getDeclaredMethod(methode).invoke(temp);   // Get the modelView
-                String view = mv.getVue();                                                      // Get the jsp page
-                HashMap<String, Object> data = mv.getData();                                    // Get all data of the mv
+            HashMap<String, Object> data = mv.getData();                                    // Get all data of the mv
 
-                if(data != null){
-                    for (Map.Entry<String, Object> entry : data.entrySet()) {
-                        String key = entry.getKey();
-                        Object value = entry.getValue();
-                        out.println(key + " - "+ value);
+            if(data != null){
+                for (Map.Entry<String, Object> entry : data.entrySet()) {
+                    String key = entry.getKey();
+                    Object value = entry.getValue();
+                    out.println(key + " - "+ value);
 
-                        request.setAttribute(key, value);
-                    }
+                    request.setAttribute(key, value);
                 }
-
-                request.setAttribute("hell", "hell");
-
-                RequestDispatcher dispat = request.getRequestDispatcher(view);
-                dispat.forward(request, response);
-            } else{
-                RequestDispatcher dispat = request.getRequestDispatcher("/");
-                dispat.forward(request, response);
             }
+
+            RequestDispatcher dispat = request.getRequestDispatcher(mv.getVue());
+            dispat.forward(request, response);
+            
        
             // for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
             //     String key = entry.getKey();
@@ -69,6 +59,8 @@ public class FrontServlet extends HttpServlet {
             //     out.println("</p>");
             // }
         } catch(Exception e) {
+            out.println("error");
+            out.println(e.getMessage());
             e.printStackTrace();
         }
     }

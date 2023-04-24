@@ -2,7 +2,6 @@
 <%@page import="java.util.*"%>
 
 <% 
-    String hell = (String) request.getAttribute("hell");
     List<Employe> all = (List<Employe>) request.getAttribute("liste");
 %>
 <!DOCTYPE html>
