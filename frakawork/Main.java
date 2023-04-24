@@ -4,6 +4,8 @@
  */
 package view;
 
+import etu1757.framework.ConnectDatabase;
+
 /**
  *
  * @author rango
@@ -11,7 +13,8 @@ package view;
 
 public class Main {
     public static void main(String[] args){
-    	System.out.println("Hello word");
+    	ConnectDatabase cb = new ConnectDatabase();
+        System.out.println(cb);
     }
     
 }
