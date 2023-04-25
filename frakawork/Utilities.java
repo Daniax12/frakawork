@@ -33,13 +33,13 @@ public class Utilities {
 
         try {
             if(mapUrl.containsKey(split[1]) == true){
-                String className = mapUrl.get(split[1]).getClassName();          // Get the name of the class
-                String methode = mapUrl.get(split[1]).getMethod();               // Get the method
+                String className = mapUrl.get(split[1]).getClassName();             // Get the name of the class
+                String methode = mapUrl.get(split[1]).getMethod();                  // Get the method
                 Class<?> classType = Class.forName(className);                                  // Recast the name => Classe
                 Object main_object = classType.getDeclaredConstructor().newInstance();                 // INstantiate the object
 
                 Enumeration enumeration = request.getParameterNames();          // Get all parameters name send in the request
-                HashMap<String, Object> data_input = new HashMap<>();
+                HashMap<String, String> data_input = new HashMap<>();
                 int count = 0;
                 while(enumeration.hasMoreElements()){
                     count++;
@@ -48,12 +48,7 @@ public class Utilities {
                 }
                 if(count != 0){                                                                         // Verify if there is no request sent -> MUST BE CAREFULL WITH THAT
                     Field[] obj_field = classType.getDeclaredFields();                     // Get all field of the object
-                    for(int i = 0; i < obj_field.length; i++){                          
-                        if(data_input.containsKey(obj_field[i].getName()) == true){                     // Verify if the data_input contains field_name of the object as key from parameters name
-                            Method methode_obj = getSetter(main_object, obj_field[i]);                  // If so, call the method setters
-                            methode_obj.invoke(main_object, data_input.get(obj_field[i].getName()));    // Invoke the method
-                        }
-                    }
+                    main_object = FieldUtil.insertDataInObject(main_object, data_input, obj_field);
                 }
                 result = (ModelView) classType.getDeclaredMethod(methode).invoke(main_object);          // Get the modelView      
             }
@@ -136,43 +131,6 @@ public class Utilities {
         }
     }
 
-
-        /**
-     * MAKE A GETTER FROM AN OBJECT WITH ITS SPECIFIC FIELD
-     * @param obj
-     * @param field
-     * @return
-     * @throws Exception 
-     */
-    public static Method getGetter(Object obj, Field field) throws Exception {
-        try {
-            String nameField = field.getName();
-            return obj.getClass().getDeclaredMethod("get" + nameField.substring(0, 1).toUpperCase() + nameField.substring(1));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception("Error on getting the Getters of "+field.getName());
-        }
-
-    }
-    
-    /**
-     * MAKE A SETTER FROM AN OBJECT WITH ITS SPECIFIC FIELD
-     * @param object
-     * @param field
-     * @return
-     * @throws NoSuchMethodException 
-     */
-    public static Method getSetter(Object object, Field field) throws Exception {
-        
-        try {
-            String nameField = field.getName();
-            String temp = "set" + nameField.substring(0, 1).toUpperCase() + nameField.substring(1);
-            return object.getClass().getDeclaredMethod(temp, field.getType());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception("Error on setting the field object");
-        }   
-    }
 }
     
 

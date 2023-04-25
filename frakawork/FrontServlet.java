@@ -29,7 +29,6 @@ public class FrontServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
         try{
             
-            out.println("Hello");
             String path = (String) request.getServletPath();
             ModelView mv = (ModelView) Utilities.getViewByPath(request, path, this.getMappingUrls());
 
