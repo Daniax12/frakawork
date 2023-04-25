@@ -20,6 +20,8 @@ public class Employe {
     private String idEmploye;
     private String nameEmploye;
     private String idDepartement;
+    private Integer numero;
+    private Date dateEmbauche;
 
 
     // Usefull function
@@ -32,6 +34,7 @@ public class Employe {
             result.addItem("etat", "0");            
         } catch (Exception e) {
             result.addItem("etat", "1");
+            result.addItem("error", e.getMessage());
         } 
         List<Departement> departments = Departement.allDepartementInDb(null);
         result.addItem("departments", departments);
@@ -54,9 +57,11 @@ public class Employe {
 
         try {
             List<Departement> result = new ArrayList<>();
-            stm = connection.prepareStatement("INSERT INTO employe VALUES('EMP'||nextval('emp_seq'), ?, ?) returning idemploye");
+            stm = connection.prepareStatement("INSERT INTO employe VALUES('EMP'||nextval('emp_seq'), ?, ?, ?, ?) returning idemploye");
             stm.setString(1, this.getNameEmploye());
             stm.setString(2, this.getIdDepartement());
+            stm.setInt(3, this.getNumero());
+            stm.setDate(4, this.getDateEmbauche());
 
             resultSet = stm.executeQuery();
             String id = null;
@@ -69,7 +74,7 @@ public class Employe {
 
         } catch (Exception ex) { 
            ex.printStackTrace();
-           throw new Exception("Error on getting all departements on database");
+           throw new Exception("Error on saving employe: " + ex.getMessage() + " with name "+this.getNameEmploye());
         } finally {
             stm.close();
             if(isOpen == false) connection.close();
@@ -96,8 +101,8 @@ public class Employe {
     public ModelView helloFunction() throws Exception{
         try {
             ModelView result = new ModelView("hello.jsp");
-            Employe e1 = new Employe("e1", "Giannis", null);
-            Employe e2 = new Employe("e2", "Jeanne", null);
+            Employe e1 = new Employe("e1", "Giannis", 0, null, null);
+            Employe e2 = new Employe("e2", "Jeanne", 0, null, null);
             List<Employe> all = new ArrayList<>();
             all.add(e1); all.add(e2);
     
@@ -110,15 +115,18 @@ public class Employe {
     }
 
     // Conctructors and Getters and setter
-    public Employe(String idEmploye, String nameEmploye, String idDepartement) throws Exception{
+    public Employe(String idEmploye, String nameEmploye, Integer numero, Date dateEmbauche, String idDepartement) throws Exception{
         try {
             this.setIdEmploye(idEmploye);
             this.setNameEmploye(nameEmploye);
             this.setIdDepartement(idDepartement);
+            this.setDateEmbauche(dateEmbauche);
+            this.setNumero(numero);
         } catch (Exception e) {
             throw new Exception("Error on constructing the employe");
         }
     }
+    
     public Employe(){}
 
     public String getIdEmploye() {
@@ -146,5 +154,25 @@ public class Employe {
 
     public void setIdDepartement(String idDepartement) {
         this.idDepartement = idDepartement;
+    }
+
+
+    public Integer getNumero() {
+        return numero;
+    }
+
+
+    public void setNumero(Integer numero) {
+        this.numero = numero;
+    }
+
+
+    public Date getDateEmbauche() {
+        return dateEmbauche;
+    }
+
+
+    public void setDateEmbauche(Date dateEmbauche) {
+        this.dateEmbauche = dateEmbauche;
     }    
 }
