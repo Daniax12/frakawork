@@ -4,10 +4,10 @@
  */
 package model;
 
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.beans.Encoder;
 import java.sql.*;
 
 import etu1757.framework.*;
@@ -21,10 +21,65 @@ public class Employe {
     private String nameEmploye;
     private String idDepartement;
     private Integer numero;
-    private Date dateEmbauche;
-
+    private java.util.Date dateEmbauche;
 
     // Usefull function
+
+    // Get the model view to show employe details(ModelaView with parameter)
+    @AnnotedClass(methodName = "detail_emp")
+    public ModelView detail_employe(String id) throws Exception{
+        ModelView result = new ModelView("detail_employe.jsp");
+        try {        
+            Employe byId = Employe.employe_by_id(id, null);
+            result.addItem("emp", byId);
+        } catch (Exception e) {
+            result.addItem("etat", "1");
+            result.addItem("error", e.getMessage());
+        } 
+        return result;
+    }
+
+    // Get an employe by id
+    public static Employe employe_by_id(String id, Connection connection) throws Exception{
+        boolean isOpen = false;
+        if(connection == null){
+            ConnectDatabase cb = new ConnectDatabase();
+            connection = cb.dbConnect("postgres", "mdpProm15", "sprint_employe");
+        } else {
+            isOpen = true;
+        }
+
+        PreparedStatement stm = null;
+        ResultSet resultSet = null;
+        Employe result = null;
+
+        try {
+            stm = connection.prepareStatement("SELECT * FROM employe WHERE idemploye = ?");
+            stm.setString(1, id);
+
+            resultSet = stm.executeQuery();
+
+            while(resultSet.next()){
+                String idEmp  = resultSet.getString("idemploye");
+                String name = resultSet.getString("nameemploye");
+                String iddepart = resultSet.getString("iddepartement");
+                Integer num = resultSet.getInt("numero");
+                java.sql.Date date = resultSet.getDate("dateembauche");
+
+                java.util.Date theDate = new java.util.Date(date.getTime());
+                result = new Employe(id, name, iddepart, num, theDate);
+            }
+            return result;
+
+        } catch (Exception ex) { 
+           ex.printStackTrace();
+           throw new Exception("Error on getting employe by id: " + ex.getMessage());
+        } finally {
+            stm.close();
+            if(isOpen == false) connection.close();
+        }
+    }
+
     // Saving an employe but also returning an MOdelView
     @AnnotedClass(methodName = "save_emp")
     public ModelView save_employe() throws Exception{
@@ -36,8 +91,13 @@ public class Employe {
             result.addItem("etat", "1");
             result.addItem("error", e.getMessage());
         } 
-        List<Departement> departments = Departement.allDepartementInDb(null);
-        result.addItem("departments", departments);
+        try {
+            List<Departement> departments = Departement.allDepartementInDb(null);
+            result.addItem("departments", departments); 
+        } catch (Exception ex) {
+            result.addItem("error", ex.getMessage());
+        }
+        
         return result;
     }
 
@@ -56,12 +116,13 @@ public class Employe {
         ResultSet resultSet = null;
 
         try {
-            List<Departement> result = new ArrayList<>();
             stm = connection.prepareStatement("INSERT INTO employe VALUES('EMP'||nextval('emp_seq'), ?, ?, ?, ?) returning idemploye");
             stm.setString(1, this.getNameEmploye());
             stm.setString(2, this.getIdDepartement());
             stm.setInt(3, this.getNumero());
-            stm.setDate(4, this.getDateEmbauche());
+            java.sql.Date date = DateUtil.utilDateToSqlDate(java.sql.Date.class, this.getDateEmbauche());
+
+            stm.setDate(4, date);
 
             resultSet = stm.executeQuery();
             String id = null;
@@ -84,16 +145,72 @@ public class Employe {
     // Get the form of the employe
     @AnnotedClass(methodName = "emp_formulaire")
     public ModelView myForm() throws Exception{
-        try {
-            ModelView result = new ModelView("emp_form.jsp");
+        ModelView result = new ModelView("emp_form.jsp");
+        try {          
             List<Departement> departments = Departement.allDepartementInDb(null);
             result.addItem("departments", departments);
 
             return result;
         } catch (Exception e) {
+            result.addItem("error", e.getMessage());
             e.printStackTrace();
-            throw new Exception("Error on sending the modelview");
         }      
+        return result;
+    }
+
+    @AnnotedClass(methodName = "list_emp")
+    public ModelView list_employe() throws Exception{
+        ModelView result = new ModelView("all_employe.jsp");
+        try {          
+            List<Employe> all = Employe.findAll(null);
+            result.addItem("employes", all);
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.addItem("error", e.getMessage());
+        }     
+        return result;
+    }
+
+    // Get all employe in database
+    public static List<Employe> findAll(Connection connection) throws Exception{
+        boolean isOpen = false;
+        if(connection == null){
+            ConnectDatabase cb = new ConnectDatabase();
+            connection = cb.dbConnect("postgres", "mdpProm15", "sprint_employe");
+        } else {
+            isOpen = true;
+        }
+
+        PreparedStatement stm = null;
+        ResultSet resultSet = null;
+        List<Employe> result = new ArrayList<>();
+        try {
+            stm = connection.prepareStatement("SELECT * FROM employe");
+
+            resultSet = stm.executeQuery();
+
+            while(resultSet.next()){
+                Employe temp = null;
+                String idEmp  = resultSet.getString("idemploye");
+                String name = resultSet.getString("nameemploye");
+                String iddepart = resultSet.getString("iddepartement");
+                Integer num = resultSet.getInt("numero");
+                java.sql.Date date = resultSet.getDate("dateembauche");
+
+                java.util.Date theDate = new java.util.Date(date.getTime());
+                temp = new Employe(idEmp, name, iddepart, num, theDate);
+                result.add(temp);
+            }
+            return result;
+
+        } catch (Exception ex) { 
+           ex.printStackTrace();
+           throw new Exception("Error on getting all employes: " + ex.getMessage());
+        } finally {
+            stm.close();
+            if(isOpen == false) connection.close();
+        }
     }
 
     // Test of the model view
@@ -101,8 +218,8 @@ public class Employe {
     public ModelView helloFunction() throws Exception{
         try {
             ModelView result = new ModelView("hello.jsp");
-            Employe e1 = new Employe("e1", "Giannis", 0, null, null);
-            Employe e2 = new Employe("e2", "Jeanne", 0, null, null);
+            Employe e1 = new Employe();
+            Employe e2 = new Employe();
             List<Employe> all = new ArrayList<>();
             all.add(e1); all.add(e2);
     
@@ -112,19 +229,6 @@ public class Employe {
             throw new Exception("Error on Hello Function");
         }
        
-    }
-
-    // Conctructors and Getters and setter
-    public Employe(String idEmploye, String nameEmploye, Integer numero, Date dateEmbauche, String idDepartement) throws Exception{
-        try {
-            this.setIdEmploye(idEmploye);
-            this.setNameEmploye(nameEmploye);
-            this.setIdDepartement(idDepartement);
-            this.setDateEmbauche(dateEmbauche);
-            this.setNumero(numero);
-        } catch (Exception e) {
-            throw new Exception("Error on constructing the employe");
-        }
     }
     
     public Employe(){}
@@ -167,12 +271,25 @@ public class Employe {
     }
 
 
-    public Date getDateEmbauche() {
+    public java.util.Date getDateEmbauche() {
         return dateEmbauche;
     }
 
 
-    public void setDateEmbauche(Date dateEmbauche) {
+    public void setDateEmbauche(java.util.Date dateEmbauche) {
         this.dateEmbauche = dateEmbauche;
     }    
+
+    public Employe(String idEmploye, String nameEmploye, String idDepartement, Integer numero, java.util.Date dateEmbauche) throws Exception{
+        try {
+            this.setIdEmploye(idEmploye);
+            this.setNameEmploye(nameEmploye);
+            this.setIdDepartement(idDepartement);
+            this.setNumero(numero);
+            this.setDateEmbauche(dateEmbauche);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+        
+    }
 }
