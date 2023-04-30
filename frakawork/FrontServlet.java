@@ -45,9 +45,8 @@ public class FrontServlet extends HttpServlet {
             }
 
             RequestDispatcher dispat = request.getRequestDispatcher(mv.getVue());
-            dispat.forward(request, response);
+           dispat.forward(request, response);
             
-       
             // for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
             //     String key = entry.getKey();
             //     Mapping value = entry.getValue();

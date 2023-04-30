@@ -10,12 +10,15 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;  
+import java.util.List;
+import java.util.Map;
+
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 
@@ -33,30 +36,37 @@ public class Utilities {
 
         try {
             if(mapUrl.containsKey(split[1]) == true){
-                String className = mapUrl.get(split[1]).getClassName();             // Get the name of the class
-                String methode = mapUrl.get(split[1]).getMethod();                  // Get the method
+                String className = mapUrl.get(split[1]).getClassName();                         // Get the name of the class
+                String method_string = mapUrl.get(split[1]).getMethod();                              // Get the method
                 Class<?> classType = Class.forName(className);                                  // Recast the name => Classe
-                Object main_object = classType.getDeclaredConstructor().newInstance();                 // INstantiate the object
+                Object main_object = classType.getDeclaredConstructor().newInstance();          // INstantiate the object
 
-                Enumeration enumeration = request.getParameterNames();          // Get all parameters name send in the request
+                Enumeration enumeration = request.getParameterNames();                          // Get all parameters name sent in the request
                 HashMap<String, String> data_input = new HashMap<>();
-                int count = 0;
                 while(enumeration.hasMoreElements()){
-                    count++;
-                    String parameterName = (String) enumeration.nextElement();           // Get the name of the parameters
-                    data_input.put(parameterName, ((String)request.getParameter(parameterName)).trim());        // Get the value of the parameters and trim the result
+                    String parameterName = (String) enumeration.nextElement();                  // Get the name of the parameters
+                    data_input.put(parameterName, ((String) request.getParameter(parameterName)).trim());        // Get the value of the parameters and trim the result
                 }
-                if(count != 0){                                                                         // Verify if there is no request sent -> MUST BE CAREFULL WITH THAT
-                    Field[] obj_field = classType.getDeclaredFields();                     // Get all field of the object
-                    main_object = FieldUtil.insertDataInObject(main_object, data_input, obj_field);
-                }
-                result = (ModelView) classType.getDeclaredMethod(methode).invoke(main_object);          // Get the modelView      
+                
+                Method method = null;
+
+                Field[] obj_field = classType.getDeclaredFields();                              // Get all field of the object
+                main_object = FieldUtil.insertDataInObject(main_object, data_input, obj_field); // Insert all fields data if some parameter name is same as object field name
+
+                Class[] parameter_class = FieldUtil.method_parameters_class(main_object, method_string);    // Get the method parameter class if it has
+                if(parameter_class.length == 0) {   
+                    method = classType.getDeclaredMethod(method_string);
+                    result = (ModelView) method.invoke(main_object);                                    // -> No parameters: give the second parameters of INVOKE and GETDECLAREDMETHOD as null
+                }else{
+                    method = classType.getDeclaredMethod(method_string, parameter_class);               // -> GIve the second parameters 
+                    Object[] parameters = FieldUtil.method_parameters_object(method, data_input);                 // Get all value of all each parameter from data from input INTO Object array
+                    result = (ModelView) method.invoke(main_object, parameters);    
+                }                                
             }
             return result;  
-
         } catch (Exception e) {
             e.printStackTrace();
-            throw new Exception(e.toString());
+            throw new Exception("Error on getting the modelView. Error:" + e.toString());
         } 
     }
 
@@ -111,17 +121,17 @@ public class Utilities {
     private static List<Class<?>> findClassesInDirectory(File directory, String packageName) throws Exception {
         List<Class<?>> classes = new ArrayList<>();
         try {
-            if (!directory.exists()) {
+            if (directory.exists() == false) {                                                                  // If the directory doesnt exist                  
                 return classes;
             }
-            File[] files = directory.listFiles();
+            File[] files = directory.listFiles();                                                               // Get all file in the directory
             for (File file : files) {
-                if (file.isDirectory()) {
-                    assert !file.getName().contains(".");
-                    classes.addAll(findClassesInDirectory(file, packageName + "." + file.getName()));
+                if (file.isDirectory() == true) {                                                               // Verify again if file is a directory itself
+                    assert !file.getName().contains(".");                                                     // Verify if the name doesnt contains a dot                                    
+                    classes.addAll(findClassesInDirectory(file, packageName + "." + file.getName()));           // Recurse the function to get all class
                 } else if (file.getName().endsWith(".class")) {
-                    String className = packageName + '.' + file.getName().substring(0, file.getName().length() - 6);
-                    classes.add(Class.forName(className));
+                    String className = packageName + '.' + file.getName().substring(0, file.getName().length() - 6);    // Delete the .class
+                    classes.add(Class.forName(className));                                                      // Cast the class and insert it tn the result
                 }
             }
             return classes;
