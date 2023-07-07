@@ -14,7 +14,7 @@ import etu1757.framework.ConnectDatabase;
 public class Main {
     public static void main(String[] args){
     	ConnectDatabase cb = new ConnectDatabase();
-        System.out.println(cb);
+        System.out.println("Hello "+cb);
     }
     
 }
