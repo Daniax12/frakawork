@@ -22,6 +22,7 @@ public class Employe {
     private String idDepartement;
     private Integer numero;
     private java.util.Date dateEmbauche;
+    private FileUpload badge;
 
     // Usefull function
 
@@ -89,13 +90,13 @@ public class Employe {
             result.addItem("etat", "0");            
         } catch (Exception e) {
             result.addItem("etat", "1");
-            result.addItem("error", e.getMessage());
+            result.addItem("error on inserting with: ", e.getMessage());
         } 
         try {
             List<Departement> departments = Departement.allDepartementInDb(null);
             result.addItem("departments", departments); 
         } catch (Exception ex) {
-            result.addItem("error", ex.getMessage());
+            result.addItem("error :", ex.getMessage());
         }
         
         return result;
@@ -116,13 +117,14 @@ public class Employe {
         ResultSet resultSet = null;
 
         try {
-            stm = connection.prepareStatement("INSERT INTO employe VALUES('EMP'||nextval('emp_seq'), ?, ?, ?, ?) returning idemploye");
+            stm = connection.prepareStatement("INSERT INTO employe VALUES('EMP'||nextval('emp_seq'), ?, ?, ?, ?, ?) returning idemploye");
             stm.setString(1, this.getNameEmploye());
             stm.setString(2, this.getIdDepartement());
             stm.setInt(3, this.getNumero());
             java.sql.Date date = DateUtil.utilDateToSqlDate(java.sql.Date.class, this.getDateEmbauche());
 
             stm.setDate(4, date);
+            stm.setBytes(5, this.getBadge().getFile());
 
             resultSet = stm.executeQuery();
             String id = null;
@@ -152,7 +154,7 @@ public class Employe {
 
             return result;
         } catch (Exception e) {
-            result.addItem("error", e.getMessage());
+            result.addItem("error on getting form with :", e.getMessage());
             e.printStackTrace();
         }      
         return result;
@@ -291,5 +293,13 @@ public class Employe {
             // TODO: handle exception
         }
         
+    }
+
+    public FileUpload getBadge() {
+        return badge;
+    }
+
+    public void setBadge(FileUpload badge) {
+        this.badge = badge;
     }
 }

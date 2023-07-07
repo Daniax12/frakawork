@@ -1,0 +1,17 @@
+CREATE TABLE departement(
+	iddepartement VARCHAR(50) NOT NULL PRIMARY KEY,
+	namedepartement VARCHAR(100),
+	location VARCHAR(50)
+);
+
+
+CREATE SEQUENCE emp_seq START WITH 1 MINVALUE 1 INCREMENT BY 1;
+CREATE TABLE employe(
+	idemploye VARCHAR(50) NOT NULL PRIMARY KEY,
+	nameemploye VARCHAR(100),
+	numero NUMERIC,
+	dateembauche DATE,
+	iddepartement VARCHAR(50),
+	badge BYTEA,
+	FOREIGN KEY(iddepartment) REFERENCES departement(iddepartement)
+);
