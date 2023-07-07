@@ -26,6 +26,19 @@ import javax.naming.spi.DirStateFactory.Result;
 public class FieldUtil { 
 
     /*
+     * To get field that class is fileUpload or return null
+     */
+    public static Field file_upload_field(Field[] allfields){
+        for (Field field : allfields) {
+            if(field.getType() == FileUpload.class){
+                return field;
+            }
+        }
+        return null;
+    }
+
+
+    /*
      * ALL METHOD PARAMETER VALUES SET IN AN ARRAY OF OBJECT -> for INVOKE METHOD
      * data here contains all value from method GetParameters
      */
@@ -40,7 +53,7 @@ public class FieldUtil {
             }
 
             Object[] result = new Object[count];
-            if(count == 0) throw new Exception("HEHE WITH MYpRAMETERS "+ myParameters.keySet().iterator().next());
+            if(count == 0) throw new Exception("Error on "+ myParameters.keySet().iterator().next());
             int i = 0;
             for(Map.Entry<String, Class> set : myParameters.entrySet()){            // Here we only have condition of int or string but we have to extend our work XXXX
                 if(data.containsKey(set.getKey()) == true){
@@ -160,7 +173,7 @@ public class FieldUtil {
                     } else if(clazz == java.sql.Time.class){
                         java.sql.Time time = DateUtil.stringToSqlTime(valueField);
                         getSetter(result, field).invoke(result, time);
-                    }        
+                    } 
                 }
             }
             return result;

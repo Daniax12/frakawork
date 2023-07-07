@@ -4,11 +4,15 @@ import etu1757.framework.AnnotedClass;
 import etu1757.framework.Mapping;
 import etu1757.framework.ModelView;
 import etu1757.framework.Utilities;
+import etu1757.framework.FileUpload;
+
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.MultipartConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +23,7 @@ import java.util.logging.Logger;
  *
  * @author rango
  */
+@MultipartConfig
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> mappingUrls;
     String packageName;

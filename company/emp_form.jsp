@@ -26,7 +26,7 @@
                             <div class="row justify-content-center">
                                 <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1"> 
                                     <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">
-                                        Register an employe
+                                        Register an employe 
                                     </p>
                                     <% if(etat != null){
                                         if(etat.equals("0") == true){ %>
@@ -36,7 +36,7 @@
                                         <% }
                                     } %>
                                         
-                                    <form action="/company/save_emp" class="mx-1 mx-md-4">
+                                    <form action="save_emp" method="POST" enctype="multipart/form-data" class="mx-1 mx-md-4">
 
                                         <div class="d-flex flex-row align-items-center mb-2">
                                             <i class="fas fa-user fa-lg me-3 fa-fw"></i>
@@ -77,7 +77,14 @@
                                                     <p> <label class="form-label" > Departement </label> </p>
                                             </div>
                                         </div>
-                                                                  
+                                                                
+                                        <div class="d-flex flex-row align-items-center mb-2">
+                                            <i class="fas fa-user fa-lg me-3 fa-fw"></i>
+                                            <div class="form-outline flex-fill mb-0">
+                                                <input type="file" class="form-control" name = "badge" required/>
+                                                <label class="form-label" > Photo badge </label>
+                                            </div>
+                                        </div>
 
 
                                         <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
